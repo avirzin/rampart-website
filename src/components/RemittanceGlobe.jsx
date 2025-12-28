@@ -230,7 +230,7 @@ function RemittanceGlobe() {
           <Globe
             ref={globeRef}
             globeImageUrl={null}
-            backgroundImageUrl="//unpkg.com/three-globe/example/img/night-sky.png"
+            backgroundImageUrl={null}
             polygonsData={polygonsData}
             polygonAltitude={0.01}
             polygonCapColor={(d) => 'rgba(255, 255, 255, 0.1)'}
