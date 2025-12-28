@@ -1,0 +1,287 @@
+import React, { useState, useEffect, useRef } from 'react';
+import Globe from 'react-globe.gl';
+import { processRemittanceData, getAvailableYears } from '../utils/processRemittanceData';
+import './RemittanceGlobe.css';
+
+function RemittanceGlobe() {
+  const [pointsData, setPointsData] = useState([]);
+  const [polygonsData, setPolygonsData] = useState([]);
+  const [availableYears, setAvailableYears] = useState([]);
+  const [selectedYear, setSelectedYear] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [hoveredPoint, setHoveredPoint] = useState(null);
+  const [maxValue, setMaxValue] = useState(0);
+  const globeRef = useRef();
+  const rotationRef = useRef({ lat: 0, lng: 0 });
+
+  useEffect(() => {
+    // Load country borders (GeoJSON) - using Natural Earth data
+    fetch('https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson')
+      .then((response) => {
+        if (!response.ok) {
+          // Fallback to alternative source
+          return fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
+        }
+        return response;
+      })
+      .then((response) => response.json())
+      .then((geoData) => {
+        // Handle both GeoJSON and TopoJSON formats
+        if (geoData.features) {
+          setPolygonsData(geoData.features);
+        } else if (geoData.objects) {
+          // TopoJSON format - would need topojson library to convert
+          // For now, use the first source
+          console.warn('TopoJSON format detected, using alternative');
+        }
+      })
+      .catch((error) => {
+        console.error('Error loading country borders:', error);
+        // Continue without borders if loading fails
+      });
+
+    // Load CSV data
+    fetch('/data/WB_KNOMAD.csv')
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to load CSV');
+        }
+        return response.text();
+      })
+      .then(async (csvText) => {
+        // Get available years
+        const years = await getAvailableYears(csvText);
+        setAvailableYears(years);
+        
+        // Set default year to latest
+        const latestYear = years[years.length - 1];
+        setSelectedYear(latestYear);
+
+        // Process data for latest year
+        const data = await processRemittanceData(csvText, latestYear);
+        
+        // Calculate max value for scaling
+        const max = Math.max(...data.map((d) => d.value), 1);
+        setMaxValue(max);
+        
+        setPointsData(data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Error loading data:', error);
+        setLoading(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (selectedYear && !loading) {
+      // Reload data for selected year
+      fetch('/data/WB_KNOMAD.csv')
+        .then(async (response) => {
+          if (!response.ok) {
+            throw new Error('Failed to load CSV');
+          }
+          return response.text();
+        })
+        .then(async (csvText) => {
+          const data = await processRemittanceData(csvText, selectedYear);
+          const max = Math.max(...data.map((d) => d.value), 1);
+          setMaxValue(max);
+          setPointsData(data);
+        })
+        .catch((error) => {
+          console.error('Error loading data:', error);
+        });
+    }
+  }, [selectedYear, loading]);
+
+  // Auto-rotation effect
+  useEffect(() => {
+    if (!globeRef.current || loading) return;
+
+    let animationFrameId;
+    const rotateGlobe = () => {
+      rotationRef.current.lng += 0.2; // Rotation speed
+      if (globeRef.current) {
+        globeRef.current.pointOfView(
+          {
+            lat: rotationRef.current.lat,
+            lng: rotationRef.current.lng,
+            altitude: 2.5,
+          },
+          0 // No animation, smooth rotation
+        );
+      }
+      animationFrameId = requestAnimationFrame(rotateGlobe);
+    };
+
+    rotateGlobe();
+
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [loading]);
+
+  // Color scale function (blue to red based on value)
+  const getColor = (value) => {
+    if (value === 0) return 'rgba(100, 100, 100, 0.3)';
+    const normalized = Math.min(value / maxValue, 1);
+    // Blue (low) -> Green -> Yellow -> Red (high)
+    if (normalized < 0.25) {
+      return `rgba(59, 130, 246, ${0.3 + normalized * 2})`; // Blue
+    } else if (normalized < 0.5) {
+      return `rgba(34, 197, 94, ${0.5 + (normalized - 0.25) * 2})`; // Green
+    } else if (normalized < 0.75) {
+      return `rgba(234, 179, 8, ${0.7 + (normalized - 0.5) * 2})`; // Yellow
+    } else {
+      return `rgba(239, 68, 68, ${0.8 + (normalized - 0.75) * 2})`; // Red
+    }
+  };
+
+  // Size scale function
+  const getSize = (value) => {
+    if (value === 0) return 0.5;
+    const normalized = Math.min(value / maxValue, 1);
+    return 0.5 + normalized * 3; // Size between 0.5 and 3.5
+  };
+
+  // Format value for display
+  const formatValue = (value) => {
+    if (value === 0) return '$0';
+    if (value >= 1000) {
+      return `$${(value / 1000).toFixed(1)}B`;
+    }
+    return `$${value.toFixed(1)}M`;
+  };
+
+  return (
+    <div className="globe-container">
+      {loading ? (
+        <div className="loading">Loading remittance data...</div>
+      ) : (
+        <>
+          <div className="controls">
+            <div className="control-group">
+              <label htmlFor="year-select">Year:</label>
+              <select
+                    id="year-select"
+                    value={selectedYear || ''}
+                    onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                    className="year-select"
+                  >
+                {availableYears.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="stats">
+              <div className="stat-item">
+                <span className="stat-label">Countries:</span>
+                <span className="stat-value">{pointsData.length}</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">Max Value:</span>
+                <span className="stat-value">{formatValue(maxValue)}</span>
+              </div>
+            </div>
+          </div>
+
+          {hoveredPoint && (
+            <div className="tooltip">
+              <div className="tooltip-country">{hoveredPoint.countryName}</div>
+              <div className="tooltip-value">
+                {formatValue(hoveredPoint.value)}
+              </div>
+              <div className="tooltip-year">Year: {hoveredPoint.year}</div>
+            </div>
+          )}
+
+          <div className="legend">
+            <div className="legend-title">Remittance Inflows</div>
+            <div className="legend-scale">
+              <div className="legend-item">
+                <div
+                  className="legend-color"
+                  style={{ backgroundColor: getColor(0) }}
+                ></div>
+                <span>Low</span>
+              </div>
+              <div className="legend-item">
+                <div
+                  className="legend-color"
+                  style={{ backgroundColor: getColor(maxValue * 0.25) }}
+                ></div>
+                <span>Medium</span>
+              </div>
+              <div className="legend-item">
+                <div
+                  className="legend-color"
+                  style={{ backgroundColor: getColor(maxValue * 0.75) }}
+                ></div>
+                <span>High</span>
+              </div>
+            </div>
+          </div>
+
+          <Globe
+            ref={globeRef}
+            globeImageUrl={null}
+            backgroundImageUrl="//unpkg.com/three-globe/example/img/night-sky.png"
+            polygonsData={polygonsData}
+            polygonAltitude={0.01}
+            polygonCapColor={(d) => 'rgba(255, 255, 255, 0.1)'}
+            polygonSideColor={(d) => 'rgba(255, 255, 255, 0.1)'}
+            polygonStrokeColor={() => 'rgba(255, 255, 255, 0.5)'}
+            polygonLabel=""
+            pointsData={pointsData}
+            pointLat="lat"
+            pointLng="lng"
+            pointColor={(d) => getColor(d.value)}
+            pointRadius={(d) => getSize(d.value)}
+            pointResolution={12}
+            pointLabel={(d) => `
+              <div style="
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 8px 12px;
+                border-radius: 4px;
+                font-size: 12px;
+                text-align: center;
+              ">
+                <div style="font-weight: bold; margin-bottom: 4px;">${d.countryName}</div>
+                <div>${formatValue(d.value)}</div>
+              </div>
+            `}
+            onPointHover={(point) => setHoveredPoint(point)}
+            onPointClick={(point) => {
+              if (globeRef.current) {
+                rotationRef.current.lat = point.lat;
+                rotationRef.current.lng = point.lng;
+                globeRef.current.pointOfView(
+                  {
+                    lat: point.lat,
+                    lng: point.lng,
+                    altitude: 2.5,
+                  },
+                  1000
+                );
+              }
+            }}
+            showAtmosphere={true}
+            atmosphereColor="#1a1a2e"
+            atmosphereAltitude={0.1}
+            enablePointerInteraction={true}
+            animateIn={true}
+          />
+        </>
+      )}
+    </div>
+  );
+}
+
+export default RemittanceGlobe;
+
