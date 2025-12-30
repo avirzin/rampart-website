@@ -98,8 +98,8 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #22c55e;
-  box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+  background: #eab308;
+  box-shadow: 0 0 8px rgba(234, 179, 8, 0.6);
   animation: pulse 2s ease-in-out infinite;
 }
 
@@ -116,6 +116,36 @@
     opacity: 0.7;
     transform: scale(1.1);
   }
+}
+
+.countdown-terminal {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Courier New', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 14px;
+  color: #06b6d4;
+  margin-top: 10px;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(6, 182, 212, 0.2);
+  border-radius: 4px;
+  backdrop-filter: blur(5px);
+}
+
+.terminal-prompt {
+  color: #06b6d4;
+  font-weight: bold;
+}
+
+.terminal-command {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.terminal-countdown {
+  color: #06b6d4;
+  font-weight: 600;
+  letter-spacing: 2px;
 }
 
 /* Responsive design */
@@ -145,6 +175,11 @@
   .status-button {
     width: 100%;
     justify-content: center;
+  }
+  
+  .countdown-terminal {
+    font-size: 12px;
+    padding: 6px 12px;
   }
 }
 

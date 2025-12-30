@@ -8,6 +8,25 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Fix for WebGPU compatibility issue in Firefox/Linux - must run before any modules load -->
+    <script>
+      // Polyfill GPUShaderStage to prevent Three.js WebGPU errors
+      if (typeof window.GPUShaderStage === 'undefined') {
+        window.GPUShaderStage = {
+          VERTEX: 1,
+          FRAGMENT: 2,
+          COMPUTE: 4
+        };
+      }
+      
+      // Force WebGL by making WebGPU unavailable
+      if (typeof navigator !== 'undefined' && typeof navigator.gpu === 'undefined') {
+        Object.defineProperty(navigator, 'gpu', {
+          get: function() { return undefined; },
+          configurable: true
+        });
+      }
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
