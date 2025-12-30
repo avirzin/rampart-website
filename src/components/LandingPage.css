@@ -2,12 +2,12 @@
   width: 100%;
   min-height: 100vh;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  background: #000000;
-  padding: 40px 20px;
+  background: transparent;
+  padding: 300px 20px 40px 20px;
   position: relative;
-  z-index: 1;
+  z-index: 10;
 }
 
 .landing-content {
@@ -18,7 +18,10 @@
   align-items: center;
   text-align: center;
   gap: 30px;
+  position: relative;
+  z-index: 10;
 }
+
 
 .main-title {
   display: flex;
@@ -117,6 +120,10 @@
 
 /* Responsive design */
 @media (max-width: 768px) {
+  .landing-page {
+    padding: 250px 20px 40px 20px;
+  }
+  
   .main-title {
     font-size: 48px;
   }

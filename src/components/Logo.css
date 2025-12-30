@@ -1,0 +1,29 @@
+.logo-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.logo {
+  width: 100px;
+  height: auto;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .logo {
+    width: 80px;
+  }
+  
+  .logo-container {
+    padding: 15px;
+  }
+}
+

@@ -6,10 +6,7 @@ import './RemittanceGlobe.css';
 function RemittanceGlobe() {
   const [pointsData, setPointsData] = useState([]);
   const [polygonsData, setPolygonsData] = useState([]);
-  const [availableYears, setAvailableYears] = useState([]);
-  const [selectedYear, setSelectedYear] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [hoveredPoint, setHoveredPoint] = useState(null);
   const [maxValue, setMaxValue] = useState(0);
   const globeRef = useRef();
   const rotationRef = useRef({ lat: 0, lng: 0 });
@@ -51,11 +48,9 @@ function RemittanceGlobe() {
       .then(async (csvText) => {
         // Get available years
         const years = await getAvailableYears(csvText);
-        setAvailableYears(years);
         
         // Set default year to latest
         const latestYear = years[years.length - 1];
-        setSelectedYear(latestYear);
 
         // Process data for latest year
         const data = await processRemittanceData(csvText, latestYear);
@@ -73,27 +68,6 @@ function RemittanceGlobe() {
       });
   }, []);
 
-  useEffect(() => {
-    if (selectedYear && !loading) {
-      // Reload data for selected year
-      fetch('/data/WB_KNOMAD.csv')
-        .then(async (response) => {
-          if (!response.ok) {
-            throw new Error('Failed to load CSV');
-          }
-          return response.text();
-        })
-        .then(async (csvText) => {
-          const data = await processRemittanceData(csvText, selectedYear);
-          const max = Math.max(...data.map((d) => d.value), 1);
-          setMaxValue(max);
-          setPointsData(data);
-        })
-        .catch((error) => {
-          console.error('Error loading data:', error);
-        });
-    }
-  }, [selectedYear, loading]);
 
   // Auto-rotation effect
   useEffect(() => {
@@ -101,7 +75,7 @@ function RemittanceGlobe() {
 
     let animationFrameId;
     const rotateGlobe = () => {
-      rotationRef.current.lng += 0.2; // Rotation speed
+      rotationRef.current.lng += 0.02; // Slow rotation speed
       if (globeRef.current) {
         globeRef.current.pointOfView(
           {
@@ -162,72 +136,6 @@ function RemittanceGlobe() {
         {loading ? (
           <div className="loading">Loading remittance data...</div>
         ) : (
-        <>
-          <div className="controls">
-            <div className="control-group">
-              <label htmlFor="year-select">Year:</label>
-              <select
-                    id="year-select"
-                    value={selectedYear || ''}
-                    onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                    className="year-select"
-                  >
-                {availableYears.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="stats">
-              <div className="stat-item">
-                <span className="stat-label">Countries:</span>
-                <span className="stat-value">{pointsData.length}</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-label">Max Value:</span>
-                <span className="stat-value">{formatValue(maxValue)}</span>
-              </div>
-            </div>
-          </div>
-
-          {hoveredPoint && (
-            <div className="tooltip">
-              <div className="tooltip-country">{hoveredPoint.countryName}</div>
-              <div className="tooltip-value">
-                {formatValue(hoveredPoint.value)}
-              </div>
-              <div className="tooltip-year">Year: {hoveredPoint.year}</div>
-            </div>
-          )}
-
-          <div className="legend">
-            <div className="legend-title">Remittance Inflows</div>
-            <div className="legend-scale">
-              <div className="legend-item">
-                <div
-                  className="legend-color"
-                  style={{ backgroundColor: getColor(0) }}
-                ></div>
-                <span>Low</span>
-              </div>
-              <div className="legend-item">
-                <div
-                  className="legend-color"
-                  style={{ backgroundColor: getColor(maxValue * 0.25) }}
-                ></div>
-                <span>Medium</span>
-              </div>
-              <div className="legend-item">
-                <div
-                  className="legend-color"
-                  style={{ backgroundColor: getColor(maxValue * 0.75) }}
-                ></div>
-                <span>High</span>
-              </div>
-            </div>
-          </div>
-
           <Globe
             ref={globeRef}
             globeImageUrl={null}
@@ -244,41 +152,12 @@ function RemittanceGlobe() {
             pointColor={(d) => getColor(d.value)}
             pointRadius={(d) => getSize(d.value)}
             pointResolution={12}
-            pointLabel={(d) => `
-              <div style="
-                background: rgba(0, 0, 0, 0.8);
-                color: white;
-                padding: 8px 12px;
-                border-radius: 4px;
-                font-size: 12px;
-                text-align: center;
-              ">
-                <div style="font-weight: bold; margin-bottom: 4px;">${d.countryName}</div>
-                <div>${formatValue(d.value)}</div>
-              </div>
-            `}
-            onPointHover={(point) => setHoveredPoint(point)}
-            onPointClick={(point) => {
-              if (globeRef.current) {
-                rotationRef.current.lat = point.lat;
-                rotationRef.current.lng = point.lng;
-                globeRef.current.pointOfView(
-                  {
-                    lat: point.lat,
-                    lng: point.lng,
-                    altitude: 2.5,
-                  },
-                  1000
-                );
-              }
-            }}
             showAtmosphere={true}
             atmosphereColor="#1a1a2e"
             atmosphereAltitude={0.1}
-            enablePointerInteraction={true}
+            enablePointerInteraction={false}
             animateIn={true}
           />
-        </>
         )}
       </div>
     </div>
