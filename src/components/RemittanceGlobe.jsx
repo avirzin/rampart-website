@@ -157,10 +157,11 @@ function RemittanceGlobe() {
   };
 
   return (
-    <div className="globe-container">
-      {loading ? (
-        <div className="loading">Loading remittance data...</div>
-      ) : (
+    <div className="globe-section">
+      <div className="globe-container">
+        {loading ? (
+          <div className="loading">Loading remittance data...</div>
+        ) : (
         <>
           <div className="controls">
             <div className="control-group">
@@ -278,7 +279,8 @@ function RemittanceGlobe() {
             animateIn={true}
           />
         </>
-      )}
+        )}
+      </div>
     </div>
   );
 }

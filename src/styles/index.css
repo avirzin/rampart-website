@@ -12,11 +12,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background: #0a0e27;
   color: #ffffff;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 #root {
   width: 100vw;
-  height: 100vh;
+  min-height: 100vh;
 }
 
