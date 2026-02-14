@@ -5,7 +5,7 @@ function LandingPage() {
   const [countdown, setCountdown] = useState('');
 
   useEffect(() => {
-    const targetDate = new Date('2026-02-01T00:00:00').getTime();
+    const targetDate = new Date('2026-04-01T00:00:00').getTime();
 
     const updateCountdown = () => {
       const now = new Date().getTime();
@@ -36,20 +36,20 @@ function LandingPage() {
     <div className="landing-page">
       <div className="landing-content">
         <h1 className="main-title">
-          <span className="title-gradient-blue">Automated Crypto</span>
-          <span className="title-gradient-purple">Trading</span>
+          <span className="title-gradient-blue">Investing in</span>
+          <span className="title-gradient-purple">Latin America</span>
         </h1>
         
-        <p className="tagline">Unlocking Latin America's Digital Future</p>
+        <p className="tagline">We believe in the growth of the region.</p>
         
         <p className="description">
-          Advanced AI-powered trading bots capturing opportunities across emerging crypto markets in Latin America
+          Backing the businesses and ideas shaping Latin America's next chapter.
         </p>
         
         <div className="status-buttons">
           <button className="status-button active">
             <span className="status-dot"></span>
-            Trading Validation in Progress
+            Investment strategy in development
           </button>
         </div>
 

@@ -3,6 +3,11 @@ import Globe from 'react-globe.gl';
 import { processRemittanceData, getAvailableYears } from '../utils/processRemittanceData';
 import './RemittanceGlobe.css';
 
+// South America country codes (ISO 3166-1 alpha-3) for highlight
+const SOUTH_AMERICA_CODES = new Set([
+  'ARG', 'BOL', 'BRA', 'CHL', 'COL', 'ECU', 'GUY', 'PRY', 'PER', 'SUR', 'URY', 'VEN',
+]);
+
 function RemittanceGlobe() {
   const [pointsData, setPointsData] = useState([]);
   const [polygonsData, setPolygonsData] = useState([]);
@@ -142,14 +147,30 @@ function RemittanceGlobe() {
             backgroundImageUrl={null}
             polygonsData={polygonsData}
             polygonAltitude={0.01}
-            polygonCapColor={(d) => 'rgba(255, 255, 255, 0.1)'}
-            polygonSideColor={(d) => 'rgba(255, 255, 255, 0.1)'}
-            polygonStrokeColor={() => 'rgba(255, 255, 255, 0.5)'}
+            polygonCapColor={(d) =>
+              d?.id && SOUTH_AMERICA_CODES.has(d.id)
+                ? 'rgba(250, 204, 21, 0.35)'
+                : 'rgba(255, 255, 255, 0.1)'
+            }
+            polygonSideColor={(d) =>
+              d?.id && SOUTH_AMERICA_CODES.has(d.id)
+                ? 'rgba(250, 204, 21, 0.25)'
+                : 'rgba(255, 255, 255, 0.1)'
+            }
+            polygonStrokeColor={(d) =>
+              d?.id && SOUTH_AMERICA_CODES.has(d.id)
+                ? 'rgba(250, 204, 21, 0.9)'
+                : 'rgba(255, 255, 255, 0.5)'
+            }
             polygonLabel=""
             pointsData={pointsData}
             pointLat="lat"
             pointLng="lng"
-            pointColor={(d) => getColor(d.value)}
+            pointColor={(d) =>
+              SOUTH_AMERICA_CODES.has(d.countryCode)
+                ? 'rgba(250, 204, 21, 1)'
+                : getColor(d.value)
+            }
             pointRadius={(d) => getSize(d.value)}
             pointResolution={12}
             showAtmosphere={true}
