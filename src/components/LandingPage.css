@@ -40,12 +40,13 @@
 .main-title {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   margin: 0;
-  font-size: 72px;
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: -2px;
+  font-family: 'Courier New', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
 }
 
 .title-gradient-blue {
@@ -173,7 +174,7 @@
   }
   
   .main-title {
-    font-size: 40px;
+    font-size: 22px;
   }
   
   .tagline {

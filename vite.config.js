@@ -5,10 +5,15 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 3000
+    port: 3000,
+    open: '/rampart.html'
   },
   publicDir: 'public',
-  // Ensure data directory is accessible
-  assetsInclude: ['**/*.csv']
+  assetsInclude: ['**/*.csv'],
+  build: {
+    rollupOptions: {
+      input: 'rampart.html'
+    }
+  }
 })
 
