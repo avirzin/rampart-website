@@ -35,23 +35,25 @@ function LandingPage() {
   return (
     <div className="landing-page">
       <div className="landing-content">
-        <h1 className="main-title">
-          <span className="title-gradient-blue">Investing in</span>
-          <span className="title-gradient-purple">Latin America</span>
-        </h1>
+        <div className="hero-blur">
+          <h1 className="main-title">
+            <span className="title-gradient-blue">Investing in</span>
+            <span className="title-gradient-purple">emerging opportunities</span>
+          </h1>
+          
+          {/* <p className="tagline">Focusing on major opportunities in emerging markets.</p> */}
+        </div>
         
-        <p className="tagline">We believe in the growth of the region.</p>
+        {/* <p className="description">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+        </p> */}
         
-        <p className="description">
-          Backing the businesses and ideas shaping Latin America's next chapter.
-        </p>
-        
-        <div className="status-buttons">
+        {/* <div className="status-buttons">
           <button className="status-button active">
             <span className="status-dot"></span>
             Investment strategy in development
           </button>
-        </div>
+        </div> */}
 
         <div className="countdown-terminal">
           <span className="terminal-prompt">$</span>

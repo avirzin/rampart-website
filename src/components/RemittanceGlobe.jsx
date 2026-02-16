@@ -3,18 +3,29 @@ import Globe from 'react-globe.gl';
 import { processRemittanceData, getAvailableYears } from '../utils/processRemittanceData';
 import './RemittanceGlobe.css';
 
-// South America country codes (ISO 3166-1 alpha-3) for highlight
-const SOUTH_AMERICA_CODES = new Set([
-  'ARG', 'BOL', 'BRA', 'CHL', 'COL', 'ECU', 'GUY', 'PRY', 'PER', 'SUR', 'URY', 'VEN',
-]);
-
 function RemittanceGlobe() {
   const [pointsData, setPointsData] = useState([]);
   const [polygonsData, setPolygonsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [maxValue, setMaxValue] = useState(0);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const globeRef = useRef();
   const rotationRef = useRef({ lat: 0, lng: 0 });
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (entry) {
+        const { width, height } = entry.contentRect;
+        setDimensions({ width, height });
+      }
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     // Load country borders (GeoJSON) - using Natural Earth data
@@ -137,44 +148,30 @@ function RemittanceGlobe() {
 
   return (
     <div className="globe-section">
-      <div className="globe-container">
+      <div ref={containerRef} className="globe-container">
         {loading ? (
           <div className="loading">Loading remittance data...</div>
         ) : (
           <Globe
             ref={globeRef}
+            width={dimensions.width || undefined}
+            height={dimensions.height || undefined}
             globeImageUrl={null}
             backgroundImageUrl={null}
             polygonsData={polygonsData}
             polygonAltitude={0.01}
-            polygonCapColor={(d) =>
-              d?.id && SOUTH_AMERICA_CODES.has(d.id)
-                ? 'rgba(250, 204, 21, 0.35)'
-                : 'rgba(255, 255, 255, 0.1)'
-            }
-            polygonSideColor={(d) =>
-              d?.id && SOUTH_AMERICA_CODES.has(d.id)
-                ? 'rgba(250, 204, 21, 0.25)'
-                : 'rgba(255, 255, 255, 0.1)'
-            }
-            polygonStrokeColor={(d) =>
-              d?.id && SOUTH_AMERICA_CODES.has(d.id)
-                ? 'rgba(250, 204, 21, 0.9)'
-                : 'rgba(255, 255, 255, 0.5)'
-            }
+            polygonCapColor={() => 'rgba(255, 255, 255, 0.1)'}
+            polygonSideColor={() => 'rgba(255, 255, 255, 0.1)'}
+            polygonStrokeColor={() => 'rgba(255, 255, 255, 0.5)'}
             polygonLabel=""
             pointsData={pointsData}
             pointLat="lat"
             pointLng="lng"
-            pointColor={(d) =>
-              SOUTH_AMERICA_CODES.has(d.countryCode)
-                ? 'rgba(250, 204, 21, 1)'
-                : getColor(d.value)
-            }
+            pointColor={() => 'rgba(250, 204, 21, 1)'}
             pointRadius={(d) => getSize(d.value)}
             pointResolution={12}
             showAtmosphere={true}
-            atmosphereColor="#1a1a2e"
+            atmosphereColor="#000000"
             atmosphereAltitude={0.1}
             enablePointerInteraction={false}
             animateIn={true}
