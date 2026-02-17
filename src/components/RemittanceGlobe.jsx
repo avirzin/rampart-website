@@ -53,8 +53,8 @@ function RemittanceGlobe() {
         // Continue without borders if loading fails
       });
 
-    // Load CSV data
-    fetch('/data/WB_KNOMAD.csv')
+    // Load CSV data (use base URL so it works under /rampart/ when deployed)
+    fetch(`${import.meta.env.BASE_URL}data/WB_KNOMAD.csv`)
       .then((response) => {
         if (!response.ok) {
           throw new Error('Failed to load CSV');
